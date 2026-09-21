@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Background squircle -->
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="url(#bgGrad)" filter="url(#shadow)" />
+
+  <!-- Minimalist Euro Symbol -->
+  <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round">
+    <!-- C-Curve of Euro -->
+    <path d="M 88 41 A 28 28 0 1 0 88 87" stroke-width="9.5" />
+    
+    <!-- Top Horizontal Crossbar -->
+    <line x1="38" y1="57" x2="81" y2="57" stroke-width="8.5" />
+    
+    <!-- Bottom Horizontal Crossbar -->
+    <line x1="38" y1="71" x2="77" y2="71" stroke-width="8.5" />
+  </g>
+</svg>
