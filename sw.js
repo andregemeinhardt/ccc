@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ccc-cache-v1';
+const CACHE_NAME = 'ccc-cache-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -30,8 +30,12 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Let currency API requests pass through with network fallback
-  if (event.request.url.includes('api.frankfurter') || event.request.url.includes('open.er-api')) {
+  // Let live currency API requests pass through with network fallback
+  if (
+    event.request.url.includes('open.er-api') ||
+    event.request.url.includes('cdn.jsdelivr') ||
+    event.request.url.includes('api.frankfurter')
+  ) {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))
     );

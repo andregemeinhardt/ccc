@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Währungsrechner CZK / EUR</title>
+  <title>Währungsrechner – Compact Currency Converter</title>
   
   <!-- PWA & Mobile Web App meta tags -->
   <link rel="manifest" href="manifest.json">
@@ -15,6 +15,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="icon" type="image/svg+xml" href="logo.svg">
+
   <style>
     :root {
       --bg: #f8fafc;
@@ -69,7 +70,7 @@
     .converter-card {
       background: var(--card-bg);
       width: 100%;
-      max-width: 360px;
+      max-width: 370px;
       border-radius: 20px;
       padding: 24px;
       box-shadow: var(--card-shadow);
@@ -159,6 +160,9 @@
       letter-spacing: 0.05em;
       color: var(--text-muted);
       margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .input-row {
@@ -182,23 +186,49 @@
       opacity: 0.4;
     }
 
-    .currency-badge {
+    /* Minimalist Currency Dropdown */
+    .currency-select-wrapper {
+      position: relative;
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      background: var(--badge-bg);
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      user-select: none;
       margin-left: 8px;
       flex-shrink: 0;
     }
 
-    .flag {
-      font-size: 1.1rem;
-      line-height: 1;
+    .currency-select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background: var(--badge-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 7px 24px 7px 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .currency-select:hover, .currency-select:focus {
+      border-color: var(--primary);
+    }
+
+    .currency-select option {
+      background: var(--card-bg);
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .select-arrow {
+      position: absolute;
+      right: 8px;
+      pointer-events: none;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
     }
 
     .swap-divider {
@@ -300,11 +330,17 @@
       display: flex;
       gap: 6px;
       margin-top: 14px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .quick-presets::-webkit-scrollbar {
+      display: none;
     }
 
     .preset-btn {
       flex: 1;
-      padding: 6px 0;
+      padding: 6px 4px;
       border: 1px solid var(--border);
       background: transparent;
       color: var(--text-muted);
@@ -313,6 +349,8 @@
       font-weight: 600;
       cursor: pointer;
       transition: all 0.15s ease;
+      white-space: nowrap;
+      text-align: center;
     }
 
     .preset-btn:hover {
@@ -328,7 +366,7 @@
     <div class="header">
       <div class="title">
         <img src="logo.svg" alt="Logo" width="24" height="24" style="border-radius: 6px; display: block;">
-        <span>CZK ⇄ EUR</span>
+        <span id="titleText">CZK ⇄ EUR</span>
       </div>
       <div class="status-badge" id="statusBadge">
         <span class="status-dot" id="statusDot"></span>
@@ -337,22 +375,34 @@
     </div>
 
     <div class="input-group">
-      <!-- CZK Box -->
-      <div class="field" id="boxCZK">
+      <!-- Top Box -->
+      <div class="field" id="boxTop">
         <div class="field-content">
-          <label class="field-label" for="inputCZK">Tschechische Krone</label>
+          <label class="field-label" id="labelTop" for="inputTop">Tschechische Krone</label>
           <div class="input-row">
-            <input type="text" inputmode="decimal" id="inputCZK" class="currency-input" placeholder="0" autocomplete="off" spellcheck="false">
+            <input type="text" inputmode="decimal" id="inputTop" class="currency-input" placeholder="0" autocomplete="off" spellcheck="false">
           </div>
         </div>
-        <div class="currency-badge">
-          <span>CZK</span>
+        <div class="currency-select-wrapper">
+          <select id="selectTop" class="currency-select" aria-label="Währung oben">
+            <option value="CZK" selected>CZK</option>
+            <option value="EUR">EUR</option>
+            <option value="USD">USD</option>
+            <option value="VND">VND</option>
+            <option value="JPY">JPY</option>
+            <option value="GBP">GBP</option>
+          </select>
+          <span class="select-arrow">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </span>
         </div>
       </div>
 
       <!-- Swap Button -->
       <div class="swap-divider">
-        <button class="swap-btn" id="swapBtn" title="Reihenfolge tauschen" type="button" aria-label="Tauschen">
+        <button class="swap-btn" id="swapBtn" title="Währungen tauschen" type="button" aria-label="Tauschen">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="3" x2="12" y2="21"></line>
             <polyline points="8 7 12 3 16 7"></polyline>
@@ -361,28 +411,34 @@
         </button>
       </div>
 
-      <!-- EUR Box -->
-      <div class="field" id="boxEUR">
+      <!-- Bottom Box -->
+      <div class="field" id="boxBottom">
         <div class="field-content">
-          <label class="field-label" for="inputEUR">Euro</label>
+          <label class="field-label" id="labelBottom" for="inputBottom">Euro</label>
           <div class="input-row">
-            <input type="text" inputmode="decimal" id="inputEUR" class="currency-input" placeholder="0" autocomplete="off" spellcheck="false">
+            <input type="text" inputmode="decimal" id="inputBottom" class="currency-input" placeholder="0" autocomplete="off" spellcheck="false">
           </div>
         </div>
-        <div class="currency-badge">
-          <span>EUR</span>
+        <div class="currency-select-wrapper">
+          <select id="selectBottom" class="currency-select" aria-label="Währung unten">
+            <option value="CZK">CZK</option>
+            <option value="EUR" selected>EUR</option>
+            <option value="USD">USD</option>
+            <option value="VND">VND</option>
+            <option value="JPY">JPY</option>
+            <option value="GBP">GBP</option>
+          </select>
+          <span class="select-arrow">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </span>
         </div>
       </div>
     </div>
 
     <!-- Quick Presets -->
-    <div class="quick-presets">
-      <button class="preset-btn" data-czk="100">100 Kč</button>
-      <button class="preset-btn" data-czk="500">500 Kč</button>
-      <button class="preset-btn" data-czk="1000">1.000 Kč</button>
-      <button class="preset-btn" data-czk="2000">2.000 Kč</button>
-      <button class="preset-btn" data-eur="50">50 €</button>
-    </div>
+    <div class="quick-presets" id="quickPresets"></div>
 
     <!-- Tageskurs Display -->
     <div class="rate-card">
@@ -406,23 +462,47 @@
   </div>
 
   <script>
-    // State
-    let rateEurToCzk = null; // 1 EUR = ? CZK
-    let lastActiveField = 'CZK';
-    let isSwapped = false;
+    // Supported Currencies Metadata
+    const CURRENCIES = {
+      CZK: { name: 'Tschechische Krone', symbol: 'Kč', presets: [100, 500, 1000, 2000, 5000], defaultVal: 1000, factor: 100, decimals: 2 },
+      EUR: { name: 'Euro', symbol: '€', presets: [10, 25, 50, 100, 200], defaultVal: 50, factor: 1, decimals: 2 },
+      USD: { name: 'US-Dollar', symbol: '$', presets: [10, 25, 50, 100, 200], defaultVal: 50, factor: 1, decimals: 2 },
+      VND: { name: 'Vietnamesischer Dong', symbol: '₫', presets: [50000, 100000, 200000, 500000, 1000000], defaultVal: 500000, factor: 100000, decimals: 0 },
+      JPY: { name: 'Japanischer Yen', symbol: '¥', presets: [1000, 3000, 5000, 10000, 20000], defaultVal: 5000, factor: 1000, decimals: 0 },
+      GBP: { name: 'Britisches Pfund', symbol: '£', presets: [10, 25, 50, 100, 200], defaultVal: 50, factor: 1, decimals: 2 }
+    };
 
-    const inputEUR = document.getElementById('inputEUR');
-    const inputCZK = document.getElementById('inputCZK');
-    const boxEUR = document.getElementById('boxEUR');
-    const boxCZK = document.getElementById('boxCZK');
+    // State (rates relative to EUR: 1 EUR = rates[X] X)
+    let rates = {
+      EUR: 1,
+      CZK: 24.35,
+      USD: 1.15,
+      VND: 29850,
+      JPY: 180.25,
+      GBP: 0.858
+    };
+
+    let lastActiveField = 'top'; // 'top' or 'bottom'
+    let currentTop = 'CZK';
+    let currentBottom = 'EUR';
+    let lastFetchedDate = '';
+    let lastFetchedSource = '';
+
+    const inputTop = document.getElementById('inputTop');
+    const inputBottom = document.getElementById('inputBottom');
+    const selectTop = document.getElementById('selectTop');
+    const selectBottom = document.getElementById('selectBottom');
+    const labelTop = document.getElementById('labelTop');
+    const labelBottom = document.getElementById('labelBottom');
     const swapBtn = document.getElementById('swapBtn');
     const rateMainText = document.getElementById('rateMainText');
     const rateInverseText = document.getElementById('rateInverseText');
     const rateDateText = document.getElementById('rateDateText');
-    const statusBadge = document.getElementById('statusBadge');
     const statusDot = document.getElementById('statusDot');
     const statusText = document.getElementById('statusText');
     const refreshBtn = document.getElementById('refreshBtn');
+    const titleText = document.getElementById('titleText');
+    const quickPresets = document.getElementById('quickPresets');
 
     // German number formatter
     function formatNumber(num, maxDecimals = 2) {
@@ -435,187 +515,242 @@
 
     function parseInput(val) {
       if (!val) return null;
-      // Allow comma and dot, remove space and multiple separators
       const cleaned = val.toString().trim().replace(/\s/g, '').replace(/,/g, '.');
       const num = parseFloat(cleaned);
       return isNaN(num) ? null : num;
     }
 
-    function calculate() {
-      if (!rateEurToCzk) return;
+    // Get exchange rate: 1 unit of fromCurr = ? units of toCurr
+    function getRate(fromCurr, toCurr) {
+      if (fromCurr === toCurr) return 1;
+      const rateFrom = rates[fromCurr];
+      const rateTo = rates[toCurr];
+      if (!rateFrom || !rateTo) return 1;
+      return rateTo / rateFrom;
+    }
 
-      if (lastActiveField === 'EUR') {
-        const valEUR = parseInput(inputEUR.value);
-        if (valEUR === null) {
-          inputCZK.value = '';
+    function calculate(source = lastActiveField) {
+      lastActiveField = source;
+      const rateTopToBottom = getRate(currentTop, currentBottom);
+      const decBottom = CURRENCIES[currentBottom].decimals;
+      const decTop = CURRENCIES[currentTop].decimals;
+
+      if (source === 'top') {
+        const valTop = parseInput(inputTop.value);
+        if (valTop === null) {
+          inputBottom.value = '';
         } else {
-          const res = valEUR * rateEurToCzk;
-          inputCZK.value = formatNumber(res, 2);
+          const res = valTop * rateTopToBottom;
+          inputBottom.value = formatNumber(res, decBottom);
         }
       } else {
-        const valCZK = parseInput(inputCZK.value);
-        if (valCZK === null) {
-          inputEUR.value = '';
+        const valBottom = parseInput(inputBottom.value);
+        if (valBottom === null) {
+          inputTop.value = '';
         } else {
-          const res = valCZK / rateEurToCzk;
-          inputEUR.value = formatNumber(res, 2);
+          const res = valBottom / rateTopToBottom;
+          inputTop.value = formatNumber(res, decTop);
         }
       }
     }
 
-    // Input handlers
-    inputEUR.addEventListener('input', () => {
-      lastActiveField = 'EUR';
-      calculate();
-    });
+    function updateLabelsAndTitle() {
+      labelTop.textContent = CURRENCIES[currentTop].name;
+      labelBottom.textContent = CURRENCIES[currentBottom].name;
+      titleText.textContent = `${currentTop} ⇄ ${currentBottom}`;
+    }
 
-    inputCZK.addEventListener('input', () => {
-      lastActiveField = 'CZK';
-      calculate();
-    });
+    function updateRateDisplay() {
+      const rateTopToBottom = getRate(currentTop, currentBottom);
+      const rateBottomToTop = getRate(currentBottom, currentTop);
 
-    // Auto-select content on focus for quick overwrite
-    inputEUR.addEventListener('focus', () => inputEUR.select());
-    inputCZK.addEventListener('focus', () => inputCZK.select());
+      const factorTop = CURRENCIES[currentTop].factor || 1;
+      const factorBottom = CURRENCIES[currentBottom].factor || 1;
 
-    // Swap input boxes
-    swapBtn.addEventListener('click', () => {
-      isSwapped = !isSwapped;
-      const group = document.querySelector('.input-group');
-      if (isSwapped) {
-        group.insertBefore(boxEUR, group.firstChild);
-        group.appendChild(boxCZK);
-        inputEUR.focus();
+      // Primary display
+      if (factorTop > 1) {
+        const primaryConverted = factorTop * rateTopToBottom;
+        rateMainText.textContent = `${formatNumber(factorTop)} ${currentTop} = ${formatNumber(primaryConverted, 2)} ${currentBottom}`;
       } else {
-        group.insertBefore(boxCZK, group.firstChild);
-        group.appendChild(boxEUR);
-        inputCZK.focus();
+        rateMainText.textContent = `1 ${currentTop} = ${formatNumber(rateTopToBottom, rateTopToBottom < 1 ? 4 : 3)} ${currentBottom}`;
       }
-    });
 
-    // Quick presets
-    document.querySelectorAll('.preset-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (btn.dataset.eur) {
-          inputEUR.value = btn.dataset.eur;
-          lastActiveField = 'EUR';
-          calculate();
-          inputEUR.focus();
-        } else if (btn.dataset.czk) {
-          inputCZK.value = btn.dataset.czk;
-          lastActiveField = 'CZK';
-          calculate();
-          inputCZK.focus();
+      // Inverse display
+      if (factorBottom > 1) {
+        const secondaryConverted = factorBottom * rateBottomToTop;
+        rateInverseText.textContent = `${formatNumber(factorBottom)} ${currentBottom} = ${formatNumber(secondaryConverted, 2)} ${currentTop}`;
+      } else {
+        rateInverseText.textContent = `1 ${currentBottom} = ${formatNumber(rateBottomToTop, rateBottomToTop < 1 ? 4 : 3)} ${currentTop}`;
+      }
+
+      if (lastFetchedDate) {
+        let displayDate = lastFetchedDate;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(lastFetchedDate)) {
+          const [y, m, d] = lastFetchedDate.split('-');
+          displayDate = `${d}.${m}.${y}`;
         }
+        rateDateText.textContent = `Stand: ${displayDate}`;
+      }
+    }
+
+    function updatePresets() {
+      quickPresets.innerHTML = '';
+      const config = CURRENCIES[currentTop];
+      config.presets.forEach(val => {
+        const btn = document.createElement('button');
+        btn.className = 'preset-btn';
+        btn.textContent = `${formatNumber(val)} ${config.symbol}`;
+        btn.addEventListener('click', () => {
+          inputTop.value = formatNumber(val);
+          calculate('top');
+          inputTop.focus();
+        });
+        quickPresets.appendChild(btn);
       });
+    }
+
+    function onCurrenciesChanged() {
+      updateLabelsAndTitle();
+      updateRateDisplay();
+      updatePresets();
+      calculate(lastActiveField);
+    }
+
+    // Dropdown change handlers
+    selectTop.addEventListener('change', (e) => {
+      const newTop = e.target.value;
+      if (newTop === currentBottom) {
+        // Swap currencies if user selects same in both
+        selectBottom.value = currentTop;
+        currentBottom = currentTop;
+      }
+      currentTop = newTop;
+      onCurrenciesChanged();
     });
 
-    // Fetch exchange rate with fallbacks
-    async function fetchRate() {
+    selectBottom.addEventListener('change', (e) => {
+      const newBottom = e.target.value;
+      if (newBottom === currentTop) {
+        // Swap currencies if user selects same in both
+        selectTop.value = currentBottom;
+        currentTop = currentBottom;
+      }
+      currentBottom = newBottom;
+      onCurrenciesChanged();
+    });
+
+    // Swap button click handler
+    swapBtn.addEventListener('click', () => {
+      const tempCurr = currentTop;
+      currentTop = currentBottom;
+      currentBottom = tempCurr;
+
+      selectTop.value = currentTop;
+      selectBottom.value = currentBottom;
+
+      const tempVal = inputTop.value;
+      inputTop.value = inputBottom.value;
+      inputBottom.value = tempVal;
+
+      lastActiveField = 'top';
+      onCurrenciesChanged();
+      inputTop.focus();
+    });
+
+    // Input event listeners
+    inputTop.addEventListener('input', () => calculate('top'));
+    inputBottom.addEventListener('input', () => calculate('bottom'));
+    inputTop.addEventListener('focus', () => inputTop.select());
+    inputBottom.addEventListener('focus', () => inputBottom.select());
+
+    // Fetch exchange rates
+    async function fetchRates() {
       statusDot.className = 'status-dot loading';
       statusText.textContent = 'Aktualisiere...';
       refreshBtn.classList.add('spinning');
 
-      try {
-        let fetchedRate = null;
-        let fetchedDate = null;
-        let source = '';
+      let fetched = false;
 
-        // 1. Try Frankfurter API (European Central Bank data)
+      // 1. Try open.er-api.com (Supports all currencies: CZK, USD, VND, JPY, GBP, EUR)
+      try {
+        const resp = await fetch('https://open.er-api.com/v6/latest/EUR');
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data && data.rates) {
+            Object.keys(CURRENCIES).forEach(c => {
+              if (data.rates[c]) rates[c] = data.rates[c];
+            });
+            lastFetchedDate = data.time_last_update_utc ? new Date(data.time_last_update_utc).toISOString().split('T')[0] : 'heute';
+            lastFetchedSource = 'Live';
+            fetched = true;
+          }
+        }
+      } catch (e) {
+        console.warn('Primary open.er-api failed, trying fallbacks...');
+      }
+
+      // 2. Fallback to jsdelivr currency API
+      if (!fetched) {
         try {
-          const resp = await fetch('https://api.frankfurter.dev/v1/latest?from=EUR&to=CZK');
+          const resp = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/eur.json');
           if (resp.ok) {
             const data = await resp.json();
-            if (data && data.rates && data.rates.CZK) {
-              fetchedRate = data.rates.CZK;
-              fetchedDate = data.date;
-              source = 'EZB';
+            if (data && data.eur) {
+              Object.keys(CURRENCIES).forEach(c => {
+                const low = c.toLowerCase();
+                if (data.eur[low]) rates[c] = data.eur[low];
+              });
+              lastFetchedDate = data.date || 'heute';
+              lastFetchedSource = 'Fallback';
+              fetched = true;
             }
           }
         } catch (e) {
-          console.warn('Frankfurter API failed, trying fallback...');
+          console.warn('Fallback jsdelivr failed...');
         }
+      }
 
-        // 2. Fallback to open.er-api.com
-        if (!fetchedRate) {
+      // 3. Fallback to localStorage cache
+      if (!fetched) {
+        const cached = localStorage.getItem('ccc_rates_cache_v2');
+        if (cached) {
           try {
-            const resp = await fetch('https://open.er-api.com/v6/latest/EUR');
-            if (resp.ok) {
-              const data = await resp.json();
-              if (data && data.rates && data.rates.CZK) {
-                fetchedRate = data.rates.CZK;
-                fetchedDate = data.time_last_update_utc ? new Date(data.time_last_update_utc).toISOString().split('T')[0] : 'heute';
-                source = 'OpenRate';
-              }
-            }
-          } catch (e) {
-            console.warn('Backup API failed...');
-          }
-        }
-
-        // 3. Fallback to localStorage cached rate
-        if (!fetchedRate) {
-          const cached = localStorage.getItem('eur_czk_cache');
-          if (cached) {
             const parsed = JSON.parse(cached);
-            fetchedRate = parsed.rate;
-            fetchedDate = parsed.date + ' (offline)';
-            source = 'Cache';
-          }
+            rates = Object.assign(rates, parsed.rates);
+            lastFetchedDate = parsed.date + ' (offline)';
+            lastFetchedSource = 'Cache';
+            fetched = true;
+          } catch (e) {}
         }
+      }
 
-        if (fetchedRate) {
-          rateEurToCzk = fetchedRate;
-          localStorage.setItem('eur_czk_cache', JSON.stringify({
-            rate: fetchedRate,
-            date: fetchedDate
-          }));
-
-          const inverseRate = 1 / fetchedRate;
-
-          // Main display: CZK to EUR
-          rateMainText.textContent = `100 CZK = ${formatNumber(inverseRate * 100, 2)} EUR`;
-          rateInverseText.textContent = `1 EUR = ${formatNumber(fetchedRate, 3)} CZK`;
-
-          // Format date to German format if YYYY-MM-DD
-          let displayDate = fetchedDate;
-          if (/^\d{4}-\d{2}-\d{2}$/.test(fetchedDate)) {
-            const [y, m, d] = fetchedDate.split('-');
-            displayDate = `${d}.${m}.${y}`;
-          }
-          rateDateText.textContent = `Stand: ${displayDate}`;
-
-          statusDot.className = 'status-dot';
-          statusText.textContent = 'Live ' + (source ? `(${source})` : '');
-
-          calculate();
-        } else {
-          throw new Error('Kein Kurs verfügbar');
-        }
-      } catch (err) {
+      if (fetched) {
+        localStorage.setItem('ccc_rates_cache_v2', JSON.stringify({
+          rates: rates,
+          date: lastFetchedDate
+        }));
+        statusDot.className = 'status-dot';
+        statusText.textContent = lastFetchedSource;
+      } else {
         statusDot.className = 'status-dot loading';
         statusText.textContent = 'Offline';
-        if (!rateEurToCzk) {
-          // Hardcoded emergency fallback if completely offline on first run
-          rateEurToCzk = 24.35;
-          rateMainText.textContent = `100 CZK = ~4,11 EUR`;
-          rateInverseText.textContent = `1 EUR = ~24,35 CZK`;
-          rateDateText.textContent = `Notfallkurs (offline)`;
-          calculate();
-        }
-      } finally {
-        refreshBtn.classList.remove('spinning');
+        if (!lastFetchedDate) lastFetchedDate = 'Notfallkurs (offline)';
       }
+
+      updateRateDisplay();
+      calculate(lastActiveField);
+      refreshBtn.classList.remove('spinning');
     }
 
-    refreshBtn.addEventListener('click', fetchRate);
+    refreshBtn.addEventListener('click', fetchRates);
 
-    // Initial setup (default: CZK -> EUR)
-    inputCZK.value = '1000';
-    lastActiveField = 'CZK';
-    fetchRate();
+    // Initial setup
+    inputTop.value = formatNumber(CURRENCIES[currentTop].defaultVal);
+    updateLabelsAndTitle();
+    updatePresets();
+    fetchRates();
 
-    // Register Service Worker for PWA (Android / iPhone / Desktop)
+    // Register Service Worker for PWA
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch(err => {
