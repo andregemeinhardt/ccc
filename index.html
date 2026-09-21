@@ -614,7 +614,17 @@
       });
     }
 
+    function saveCurrencies() {
+      try {
+        localStorage.setItem('ccc_saved_currencies', JSON.stringify({
+          top: currentTop,
+          bottom: currentBottom
+        }));
+      } catch (e) {}
+    }
+
     function onCurrenciesChanged() {
+      saveCurrencies();
       updateLabelsAndTitle();
       updateRateDisplay();
       updatePresets();
@@ -748,6 +758,20 @@
     }
 
     refreshBtn.addEventListener('click', fetchRates);
+
+    // Restore saved currency combination if available
+    try {
+      const saved = localStorage.getItem('ccc_saved_currencies');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.top && CURRENCIES[parsed.top] && parsed.bottom && CURRENCIES[parsed.bottom] && parsed.top !== parsed.bottom) {
+          currentTop = parsed.top;
+          currentBottom = parsed.bottom;
+          selectTop.value = currentTop;
+          selectBottom.value = currentBottom;
+        }
+      }
+    } catch (e) {}
 
     // Initial setup
     inputTop.value = formatNumber(CURRENCIES[currentTop].defaultVal);
