@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Währungsrechner EUR / CZK</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --focus-ring: #3b82f6;
+      --primary: #2563eb;
+      --primary-light: #eff6ff;
+      --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+      --badge-bg: #f1f5f9;
+      --badge-text: #475569;
+      --success-dot: #10b981;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --card-bg: #1e293b;
+        --text: #f8fafc;
+        --text-muted: #94a3b8;
+        --border: #334155;
+        --focus-ring: #60a5fa;
+        --primary: #3b82f6;
+        --primary-light: #1e3a8a33;
+        --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+        --badge-bg: #334155;
+        --badge-text: #cbd5e1;
+        --success-dot: #34d399;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .converter-card {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 360px;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border);
+      position: relative;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      background: var(--badge-bg);
+      color: var(--badge-text);
+      border-radius: 9999px;
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: var(--success-dot);
+    }
+
+    .status-dot.loading {
+      background-color: #f59e0b;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+    }
+
+    .field {
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.15s ease;
+      background: var(--card-bg);
+    }
+
+    .field:focus-within {
+      border-color: var(--focus-ring);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .field-content {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .field-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+    }
+
+    .currency-input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text);
+      width: 100%;
+      min-width: 0;
+    }
+
+    .currency-input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.4;
+    }
+
+    .currency-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      background: var(--badge-bg);
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      user-select: none;
+      margin-left: 8px;
+      flex-shrink: 0;
+    }
+
+    .flag {
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .swap-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin: -4px 0;
+      z-index: 2;
+    }
+
+    .swap-btn {
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 50%;
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+    }
+
+    .swap-btn:hover {
+      color: var(--primary);
+      border-color: var(--primary);
+      transform: rotate(180deg);
+    }
+
+    .rate-card {
+      margin-top: 18px;
+      padding: 14px 16px;
+      background: var(--badge-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .rate-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .rate-title {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .refresh-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 2px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s ease, transform 0.3s ease;
+    }
+
+    .refresh-btn:hover {
+      color: var(--primary);
+    }
+
+    .refresh-btn.spinning svg {
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    .rate-main {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .rate-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .quick-presets {
+      display: flex;
+      gap: 6px;
+      margin-top: 14px;
+    }
+
+    .preset-btn {
+      flex: 1;
+      padding: 6px 0;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .preset-btn:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="converter-card">
+    <div class="header">
+      <div class="title">EUR ⇄ CZK</div>
+      <div class="status-badge" id="statusBadge">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Lade Kurs...</span>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <!-- EUR Box -->
+      <div class="field" id="boxEUR">
+        <div class="field-content">
+          <label class="field-label" for="inputEUR">Euro</label>
+          <div class="input-row">
+            <input type="text" inputmode="decimal" id="inputEUR" class="currency-input" placeholder="0" autocomplete="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="currency-badge">
+          <span class="flag">🇪🇺</span>
+          <span>EUR</span>
+        </div>
+      </div>
+
+      <!-- Swap Button -->
+      <div class="swap-divider">
+        <button class="swap-btn" id="swapBtn" title="Reihenfolge tauschen" type="button" aria-label="Tauschen">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m7 15 5 5 5-5"/>
+            <path d="m7 9 5-5 5-5"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- CZK Box -->
+      <div class="field" id="boxCZK">
+        <div class="field-content">
+          <label class="field-label" for="inputCZK">Tschechische Krone</label>
+          <div class="input-row">
+            <input type="text" inputmode="decimal" id="inputCZK" class="currency-input" placeholder="0" autocomplete="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="currency-badge">
+          <span class="flag">🇨🇿</span>
+          <span>CZK</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Presets -->
+    <div class="quick-presets">
+      <button class="preset-btn" data-eur="10">10 €</button>
+      <button class="preset-btn" data-eur="50">50 €</button>
+      <button class="preset-btn" data-eur="100">100 €</button>
+      <button class="preset-btn" data-czk="500">500 Kč</button>
+      <button class="preset-btn" data-czk="1000">1.000 Kč</button>
+    </div>
+
+    <!-- Tageskurs Display -->
+    <div class="rate-card">
+      <div class="rate-header">
+        <span class="rate-title">Aktueller Tageskurs</span>
+        <button class="refresh-btn" id="refreshBtn" title="Kurs aktualisieren">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+            <path d="M16 21h5v-5"/>
+          </svg>
+        </button>
+      </div>
+      <div class="rate-main" id="rateMainText">1 EUR = -- CZK</div>
+      <div class="rate-sub">
+        <span id="rateInverseText">1 CZK = -- EUR</span>
+        <span id="rateDateText">Stand: --</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State
+    let rateEurToCzk = null; // 1 EUR = ? CZK
+    let lastActiveField = 'EUR';
+    let isSwapped = false;
+
+    const inputEUR = document.getElementById('inputEUR');
+    const inputCZK = document.getElementById('inputCZK');
+    const boxEUR = document.getElementById('boxEUR');
+    const boxCZK = document.getElementById('boxCZK');
+    const swapBtn = document.getElementById('swapBtn');
+    const rateMainText = document.getElementById('rateMainText');
+    const rateInverseText = document.getElementById('rateInverseText');
+    const rateDateText = document.getElementById('rateDateText');
+    const statusBadge = document.getElementById('statusBadge');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const refreshBtn = document.getElementById('refreshBtn');
+
+    // German number formatter
+    function formatNumber(num, maxDecimals = 2) {
+      if (isNaN(num) || num === null) return '';
+      return new Intl.NumberFormat('de-DE', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: maxDecimals
+      }).format(num);
+    }
+
+    function parseInput(val) {
+      if (!val) return null;
+      // Allow comma and dot, remove space and multiple separators
+      const cleaned = val.toString().trim().replace(/\s/g, '').replace(/,/g, '.');
+      const num = parseFloat(cleaned);
+      return isNaN(num) ? null : num;
+    }
+
+    function calculate() {
+      if (!rateEurToCzk) return;
+
+      if (lastActiveField === 'EUR') {
+        const valEUR = parseInput(inputEUR.value);
+        if (valEUR === null) {
+          inputCZK.value = '';
+        } else {
+          const res = valEUR * rateEurToCzk;
+          inputCZK.value = formatNumber(res, 2);
+        }
+      } else {
+        const valCZK = parseInput(inputCZK.value);
+        if (valCZK === null) {
+          inputEUR.value = '';
+        } else {
+          const res = valCZK / rateEurToCzk;
+          inputEUR.value = formatNumber(res, 2);
+        }
+      }
+    }
+
+    // Input handlers
+    inputEUR.addEventListener('input', () => {
+      lastActiveField = 'EUR';
+      calculate();
+    });
+
+    inputCZK.addEventListener('input', () => {
+      lastActiveField = 'CZK';
+      calculate();
+    });
+
+    // Auto-select content on focus for quick overwrite
+    inputEUR.addEventListener('focus', () => inputEUR.select());
+    inputCZK.addEventListener('focus', () => inputCZK.select());
+
+    // Swap input boxes
+    swapBtn.addEventListener('click', () => {
+      isSwapped = !isSwapped;
+      const group = document.querySelector('.input-group');
+      if (isSwapped) {
+        group.insertBefore(boxCZK, group.firstChild);
+        group.appendChild(boxEUR);
+        inputCZK.focus();
+      } else {
+        group.insertBefore(boxEUR, group.firstChild);
+        group.appendChild(boxCZK);
+        inputEUR.focus();
+      }
+    });
+
+    // Quick presets
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.eur) {
+          inputEUR.value = btn.dataset.eur;
+          lastActiveField = 'EUR';
+          calculate();
+          inputEUR.focus();
+        } else if (btn.dataset.czk) {
+          inputCZK.value = btn.dataset.czk;
+          lastActiveField = 'CZK';
+          calculate();
+          inputCZK.focus();
+        }
+      });
+    });
+
+    // Fetch exchange rate with fallbacks
+    async function fetchRate() {
+      statusDot.className = 'status-dot loading';
+      statusText.textContent = 'Aktualisiere...';
+      refreshBtn.classList.add('spinning');
+
+      try {
+        let fetchedRate = null;
+        let fetchedDate = null;
+        let source = '';
+
+        // 1. Try Frankfurter API (European Central Bank data)
+        try {
+          const resp = await fetch('https://api.frankfurter.dev/v1/latest?from=EUR&to=CZK');
+          if (resp.ok) {
+            const data = await resp.json();
+            if (data && data.rates && data.rates.CZK) {
+              fetchedRate = data.rates.CZK;
+              fetchedDate = data.date;
+              source = 'EZB';
+            }
+          }
+        } catch (e) {
+          console.warn('Frankfurter API failed, trying fallback...');
+        }
+
+        // 2. Fallback to open.er-api.com
+        if (!fetchedRate) {
+          try {
+            const resp = await fetch('https://open.er-api.com/v6/latest/EUR');
+            if (resp.ok) {
+              const data = await resp.json();
+              if (data && data.rates && data.rates.CZK) {
+                fetchedRate = data.rates.CZK;
+                fetchedDate = data.time_last_update_utc ? new Date(data.time_last_update_utc).toISOString().split('T')[0] : 'heute';
+                source = 'OpenRate';
+              }
+            }
+          } catch (e) {
+            console.warn('Backup API failed...');
+          }
+        }
+
+        // 3. Fallback to localStorage cached rate
+        if (!fetchedRate) {
+          const cached = localStorage.getItem('eur_czk_cache');
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            fetchedRate = parsed.rate;
+            fetchedDate = parsed.date + ' (offline)';
+            source = 'Cache';
+          }
+        }
+
+        if (fetchedRate) {
+          rateEurToCzk = fetchedRate;
+          localStorage.setItem('eur_czk_cache', JSON.stringify({
+            rate: fetchedRate,
+            date: fetchedDate
+          }));
+
+          const inverseRate = 1 / fetchedRate;
+
+          rateMainText.textContent = `1 EUR = ${formatNumber(fetchedRate, 3)} CZK`;
+          rateInverseText.textContent = `1 CZK = ${formatNumber(inverseRate, 4)} EUR`;
+
+          // Format date to German format if YYYY-MM-DD
+          let displayDate = fetchedDate;
+          if (/^\d{4}-\d{2}-\d{2}$/.test(fetchedDate)) {
+            const [y, m, d] = fetchedDate.split('-');
+            displayDate = `${d}.${m}.${y}`;
+          }
+          rateDateText.textContent = `Stand: ${displayDate}`;
+
+          statusDot.className = 'status-dot';
+          statusText.textContent = 'Live ' + (source ? `(${source})` : '');
+
+          calculate();
+        } else {
+          throw new Error('Kein Kurs verfügbar');
+        }
+      } catch (err) {
+        statusDot.className = 'status-dot loading';
+        statusText.textContent = 'Offline';
+        if (!rateEurToCzk) {
+          // Hardcoded emergency fallback if completely offline on first run
+          rateEurToCzk = 24.35;
+          rateMainText.textContent = `1 EUR = ~24,35 CZK`;
+          rateInverseText.textContent = `1 CZK = ~0,041 EUR`;
+          rateDateText.textContent = `Notfallkurs (offline)`;
+          calculate();
+        }
+      } finally {
+        refreshBtn.classList.remove('spinning');
+      }
+    }
+
+    refreshBtn.addEventListener('click', fetchRate);
+
+    // Initial setup
+    inputEUR.value = '1';
+    fetchRate();
+  </script>
+</body>
+</html>
