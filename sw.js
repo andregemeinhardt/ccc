@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ccc-cache-v4';
+const CACHE_NAME = 'ccc-cache-v5';
 const ASSETS = [
   './',
   './index.html',
